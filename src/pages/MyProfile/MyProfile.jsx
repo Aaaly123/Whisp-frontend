@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { IoCopy } from "react-icons/io5";
 import Footer from "../../components/Footer/Footer";
 const API_URL = import.meta.env.VITE_BACKEND_URL;
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
 function MyProfile() {
   const navigate = useNavigate();
@@ -80,7 +79,7 @@ function MyProfile() {
   };
 
   const handleCopy = () => {
-    const link = `${FRONTEND_URL}/writefeedback/${user?.id}`;
+    const link = `/writefeedback/${user?.id}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
