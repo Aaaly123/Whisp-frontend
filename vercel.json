@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/writefeedback/:id", "destination": "/index.html" },
+    { "source": "/myprofile", "destination": "/index.html" },
+    { "source": "/mywall", "destination": "/index.html" },
+    { "source": "/writtenfeedbacks", "destination": "/index.html" }
+  ]
+}
