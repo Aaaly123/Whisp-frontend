@@ -80,7 +80,7 @@ function MyProfile() {
   };
 
   const handleCopy = () => {
-    const link = `/writefeedback/${user?.id}`;
+    const link = `${FRONTEND_URL}/writefeedback/${user?.id}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
