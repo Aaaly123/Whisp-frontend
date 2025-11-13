@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { IoCopy } from "react-icons/io5";
 import Footer from "../../components/Footer/Footer";
 const API_URL = import.meta.env.VITE_BACKEND_URL;
+const FRONTEND_URL = "https://whisp-sigma.vercel.app/";
 
 function MyProfile() {
   const navigate = useNavigate();
