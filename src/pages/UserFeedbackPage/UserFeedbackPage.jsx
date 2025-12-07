@@ -1,19 +1,45 @@
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+
 const API_URL = import.meta.env.VITE_BACKEND_URL;
+
+// Yup schema for validation
+const feedbackSchema = yup.object().shape({
+  someone_text: yup
+    .string()
+    .trim()
+    .matches(/^[a-zA-Z0-9\s.,'-]*$/, "Invalid characters detected")
+    .required("This field is required"),
+  feedback_text: yup
+    .string()
+    .trim()
+    .matches(/^[a-zA-Z0-9\s.,'-!?]*$/, "Invalid characters detected")
+    .required("Feedback message is required"),
+});
 
 const UserFeedbackPage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
-  const [someone_text, setSomeone_text] = useState("");
-  const [feedback_text, setFeedback_text] = useState("");
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
+
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(feedbackSchema),
+  });
 
   // Token expiration check
   const isTokenExpired = (token) => {
@@ -47,35 +73,26 @@ const UserFeedbackPage = () => {
       });
   }, [id, token]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!feedback_text.trim()) {
-      alert("Please enter feedback before submitting!");
-      return;
-    }
-
+  const onSubmit = async (data) => {
     try {
       await axios.post(
         `${API_URL}/api/feedbacks/write`,
-        { receiverId: id, someone_text, feedback_text },
+        { receiverId: id, ...data },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setSomeone_text("");
-      setFeedback_text("");
+      reset();
       alert("Feedback submitted successfully!");
     } catch (err) {
       console.error("Error submitting feedback:", err);
+      alert("Failed to submit feedback.");
     }
   };
 
   return (
     <>
       <Navbar />
-
       <div className="mt-24 mx-4 sm:mx-10">
-        {/* Loading State */}
         {loading ? (
           <div className="text-center mt-20 text-gray-400 animate-pulse">
             Loading user details...
@@ -86,7 +103,6 @@ const UserFeedbackPage = () => {
           </div>
         ) : user ? (
           <div className="max-w-3xl mx-auto bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-2xl shadow-lg border border-white/10 p-8 text-white backdrop-blur-lg">
-            {/* User Info */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">
                 Send Feedback To
@@ -99,9 +115,8 @@ const UserFeedbackPage = () => {
               </p>
             </div>
 
-            {/* Feedback Form */}
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmit(onSubmit)}
               className="space-y-5 bg-white/10 p-6 rounded-xl border border-white/20 shadow-md"
             >
               <div>
@@ -110,11 +125,17 @@ const UserFeedbackPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={someone_text}
-                  onChange={(e) => setSomeone_text(e.target.value)}
+                  {...register("someone_text")}
                   placeholder="e.g., FAST Karachi, Office, School"
-                  className="w-full px-4 py-2 border border-gray-500 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
+                  className={`w-full px-4 py-2 border rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 ${
+                    errors.someone_text ? "border-red-500" : "border-gray-500"
+                  }`}
                 />
+                {errors.someone_text && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.someone_text.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -122,12 +143,18 @@ const UserFeedbackPage = () => {
                   Feedback Message
                 </label>
                 <textarea
-                  value={feedback_text}
-                  onChange={(e) => setFeedback_text(e.target.value)}
+                  {...register("feedback_text")}
                   rows="5"
                   placeholder="Write your honest thoughts here..."
-                  className="w-full px-4 py-2 border border-gray-500 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 resize-none"
+                  className={`w-full px-4 py-2 border rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 resize-none ${
+                    errors.feedback_text ? "border-red-500" : "border-gray-500"
+                  }`}
                 ></textarea>
+                {errors.feedback_text && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.feedback_text.message}
+                  </p>
+                )}
               </div>
 
               <button
