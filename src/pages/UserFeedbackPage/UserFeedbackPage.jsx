@@ -9,17 +9,17 @@ import Footer from "../../components/Footer/Footer";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Yup schema for validation
+// ✅ Fixed Yup schema for safe regex
 const feedbackSchema = yup.object().shape({
   someone_text: yup
     .string()
     .trim()
-    .matches(/^[a-zA-Z0-9\s.,'-]*$/, "Invalid characters detected")
+    .matches(/^[\-a-zA-Z0-9\s.,'!]*$/, "Invalid characters detected") // '-' moved to start
     .required("This field is required"),
   feedback_text: yup
     .string()
     .trim()
-    .matches(/^[a-zA-Z0-9\s.,'-!?]*$/, "Invalid characters detected")
+    .matches(/^[\-a-zA-Z0-9\s.,'!?]*$/, "Invalid characters detected") // '-' moved to start
     .required("Feedback message is required"),
 });
 
