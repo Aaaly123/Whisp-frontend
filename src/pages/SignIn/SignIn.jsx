@@ -3,23 +3,42 @@ import Navbar from "../../components/Navbar/Navbar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
 const API_URL = import.meta.env.VITE_BACKEND_URL;
+
+// ✅ Yup schema for frontend validation
+const signInSchema = yup.object().shape({
+  email: yup
+    .string()
+    .trim()
+    .email("Please enter a valid email")
+    .required("Email is required"),
+  password: yup
+    .string()
+    .trim()
+    .required("Password cannot be empty")
+    .min(6, "Password must be at least 6 characters"),
+});
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(signInSchema),
+  });
 
+  const onSubmit = async (data) => {
+    setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/auth/signin`, {
-        email,
-        password,
-      });
+      const response = await axios.post(`${API_URL}/api/auth/signin`, data);
 
       console.log("Response:", response.data);
 
@@ -52,19 +71,24 @@ const SignIn = () => {
             <span className="font-semibold text-indigo-400">Whisp</span>
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email
               </label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-white"
+                {...register("email")}
+                className={`w-full px-4 py-2 rounded-lg bg-gray-800 border ${
+                  errors.email ? "border-red-500" : "border-gray-600"
+                } focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-white`}
                 placeholder="your@email.com"
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -73,12 +97,17 @@ const SignIn = () => {
               </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-white"
+                {...register("password")}
+                className={`w-full px-4 py-2 rounded-lg bg-gray-800 border ${
+                  errors.password ? "border-red-500" : "border-gray-600"
+                } focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-white`}
                 placeholder="••••••••"
               />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <button
